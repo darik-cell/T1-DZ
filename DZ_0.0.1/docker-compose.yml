@@ -1,0 +1,12 @@
+services:
+  help-service:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - h2data:/opt/h2-data
+    environment:
+      - H2_DB_URL=jdbc:h2:/opt/h2-data/support;AUTO_SERVER=TRUE
+
+volumes:
+  h2data:
