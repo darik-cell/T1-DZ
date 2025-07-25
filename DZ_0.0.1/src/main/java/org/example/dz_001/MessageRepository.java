@@ -4,14 +4,14 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MessageRepository {
+public class MessageRepository implements Repository{
   private final String url;
   private static final String USER = "sa";
   private static final String PASS = "";
 
   static {
     try {
-      Class.forName("org.h2.Driver");   // <‑‑ ключевая строка
+      Class.forName("org.h2.Driver");
     } catch (ClassNotFoundException e) {
       throw new IllegalStateException("H2 driver not found on classpath", e);
     }
