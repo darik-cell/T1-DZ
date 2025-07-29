@@ -1,6 +1,5 @@
 package org.example;
 
-@Logged
 public class LoggingSupportManager implements SupportManager {
 
   private final SupportManager supportManager;

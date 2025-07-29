@@ -5,10 +5,8 @@ import org.example.dz_001.configuration.Instance;
 import org.reflections.Reflections;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.lang.reflect.Method;
+import java.util.*;
 
 public class ApplicationContext {
 
@@ -19,7 +17,7 @@ public class ApplicationContext {
             .orElseThrow(() -> new IllegalArgumentException("Нет такого компонента: " + clazz));
   }
 
-  public ApplicationContext() {
+  public ApplicationContext() throws InvocationTargetException, IllegalAccessException {
     Reflections reflections = new Reflections("org.example.dz_001.configuration");
     final var configs = reflections.getTypesAnnotatedWith(Configuration.class)
             .stream()
@@ -37,18 +35,29 @@ public class ApplicationContext {
               }
             })
             .toList();
-    for (final var config : configs) {
-      Arrays.stream(config.getClass().getMethods())
+    for (Object configuration : configs) {
+      List<Method> methods = Arrays.stream(configuration.getClass().getMethods())
               .filter(method -> method.isAnnotationPresent(Instance.class))
-              .forEach(method -> {
-                try {
-                  instances.put(method.getReturnType(), method.invoke(config));
-                } catch (IllegalAccessException e) {
-                  throw new RuntimeException(e);
-                } catch (InvocationTargetException e) {
-                  throw new RuntimeException(e);
-                }
-              });
+              .toList();
+      List<Method> methodsWithoutParameters = methods.stream()
+              .filter(method -> method.getParameterCount() == 0)
+              .toList();
+      List<Method> methodsWithParameters = methods.stream()
+              .filter(method -> method.getParameterCount() > 0)
+              .toList();
+      for (var method : methodsWithoutParameters) {
+        instances.put(method.getReturnType(), method.invoke(configuration));
+      }
+      for (var method : methodsWithParameters) {
+        Object[] args = Arrays.stream(method.getParameterTypes())
+                .map(instances::get)
+                .toArray();
+        instances.put(method.getReturnType(), method.invoke(configuration, args));
+      }
     }
+  }
+
+  public List<?> getAllInstances() {
+    return new ArrayList<>(instances.values());
   }
 }

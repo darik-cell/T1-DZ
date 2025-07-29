@@ -9,8 +9,8 @@ import org.example.SupportServiceImpl;
 public class SupportConfiguration {
 
   @Instance
-  public SupportManager supportManager() {
-    return new SupportManagerImpl(supportService());
+  public SupportManager supportManager(SupportService supportService) {
+    return new SupportManagerImpl(supportService);
   }
 
   @Instance
