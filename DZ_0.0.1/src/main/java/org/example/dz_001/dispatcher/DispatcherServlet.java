@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.example.dz_001.context.ApplicationContext;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Objects;
 
@@ -16,8 +17,8 @@ public class DispatcherServlet {
   private List<HandlerMapping> mappings;
   private List<HandlerAdapter> adapters;
 
-  public void init() {
-    var ctx = new ApplicationContext();
+  public void init() throws InvocationTargetException, IllegalAccessException {
+    var ctx = new ApplicationContext("org.example.dz_001.configuration");
     mappings = List.of(new AnnotationHandlerMapping(ctx));
     adapters = List.of(new ReflectionHandlerAdapter());
   }

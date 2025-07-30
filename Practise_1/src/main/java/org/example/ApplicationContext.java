@@ -2,68 +2,103 @@ package org.example;
 
 import org.example.configuration.Configuration;
 import org.example.configuration.Instance;
+import org.example.proxy.ProxyApplier;
 import org.reflections.Reflections;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.util.*;
 
 public class ApplicationContext {
+  private final Map<String, Object> instances = new HashMap<>();
+  private final List<Method> instanceMethods = new ArrayList<>();
+  private final Map<Class<?>, Object> configInstances = new HashMap<>();
+  private final Set<String> instancesInProgress = new HashSet<>();
 
-  private final Map<Class<?>, Object> instances = new HashMap<>();
+  public ApplicationContext(String packageName) {
+    scanConfigurationClasses(packageName);
+    init();
+  }
 
-  public ApplicationContext() throws InvocationTargetException, IllegalAccessException {
-    Reflections reflections = new Reflections("org.example.configuration");
-    final var configurations = reflections.getTypesAnnotatedWith(Configuration.class)
-            .stream()
-            .map(type -> {
-              try {
-                return type.getDeclaredConstructor().newInstance();
-              } catch (InstantiationException e) {
-                throw new RuntimeException(e);
-              } catch (IllegalAccessException e) {
-                throw new RuntimeException(e);
-              } catch (InvocationTargetException e) {
-                throw new RuntimeException(e);
-              } catch (NoSuchMethodException e) {
-                throw new RuntimeException(e);
-              }
-            })
-            .toList();
-    for (Object configuration : configurations) {
-      List<Method> methods = Arrays.stream(configuration.getClass().getMethods())
-              .filter(method -> method.isAnnotationPresent(Instance.class))
-              .toList();
-      List<Method> methodsWithoutParameters = methods.stream()
-              .filter(method -> method.getParameterCount() == 0)
-              .toList();
-      List<Method> methodsWithParameters = methods.stream()
-              .filter(method -> method.getParameterCount() > 0)
-              .toList();
-      for (var method : methodsWithoutParameters) {
-        instances.put(method.getReturnType(), wrapWithLoggingProxy(method.invoke(configuration)));
-      }
-      for (var method : methodsWithParameters) {
-        Object[] args = Arrays.stream(method.getParameterTypes())
-                .map(instances::get)
-                .toArray();
-        instances.put(method.getReturnType(), wrapWithLoggingProxy(method.invoke(configuration, args)));
+  private void scanConfigurationClasses(String packageName) {
+    Reflections reflections = new Reflections(packageName);
+    Set<Class<?>> configurationClasses = reflections.getTypesAnnotatedWith(Configuration.class);
+    for (Class<?> configClass : configurationClasses) {
+      try {
+        Object configInstance = configClass.getDeclaredConstructor().newInstance();
+        configInstances.put(configClass, configInstance);
+        for (Method method : configClass.getDeclaredMethods()) {
+          if (method.isAnnotationPresent(Instance.class)) {
+            instanceMethods.add(method);
+          }
+        }
+      } catch (Exception e) {
+        e.printStackTrace();
       }
     }
   }
 
-  private Object wrapWithLoggingProxy(Object object) {
-    return Proxy.newProxyInstance(this.getClass().getClassLoader(),
-            object.getClass().getInterfaces(),
-            new LoggingInvocationHandler(object)
-    );
+  public <T> T getInstance(Class<T> instanceType) {
+    return instanceType.cast(instances.values().stream()
+            .filter(instanceType::isInstance)
+            .findFirst()
+            .orElseGet(() -> createInstanceByType(instanceType)));
   }
 
-  public <T> T getInstance(Class<T> clazz) {
-    return (T) Optional.ofNullable(instances.get(clazz))
-            .orElseThrow();
+  public <T> List<T> getInstances(Class<T> instanceType) {
+    return (List<T>) instances.values().stream()
+            .filter(instanceType::isInstance)
+            .toList();
   }
 
+  private void init() {
+    instanceMethods.stream()
+            .sorted(Comparator.comparingInt((Method m) -> m.getAnnotation(Instance.class).priority()).reversed())
+            .forEach(m -> createInstance(m.getName(), m));
+  }
 
+  private Object applyProxies(Object o) {
+    var result = o;
+    for (ProxyApplier applier : getInstances(ProxyApplier.class)) {
+      result = applier.apply(result);
+    }
+    return result;
+  }
+
+  private Object createInstanceByType(Class<?> instanceType) {
+    for (Method method : instanceMethods) {
+      if (instanceType.isAssignableFrom(method.getReturnType())) {
+        return createInstance(method.getName(), method);
+      }
+    }
+    throw new RuntimeException("No instance found of type " + instanceType.getName());
+  }
+
+  private Object createInstance(String instanceName, Method method) {
+    if (instancesInProgress.contains(instanceName)) {
+      throw new RuntimeException("Circular dependency detected for instance: " + instanceName);
+    }
+    instancesInProgress.add(instanceName);
+
+    try {
+      Object configInstance = configInstances.get(method.getDeclaringClass());
+      Object[] dependencies = resolveDependencies(method);
+      Object instance = method.invoke(configInstance, dependencies);
+      instances.put(instanceName, applyProxies(instance));
+      return instances.get(instanceName);
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to create instance: " + instanceName, e);
+    } finally {
+      instancesInProgress.remove(instanceName);
+    }
+  }
+
+  private Object[] resolveDependencies(Method method) {
+    return Arrays.stream(method.getParameterTypes())
+            .map(this::getInstance)
+            .toArray();
+  }
+
+  public List<?> getAllInstances() {
+    return new ArrayList<>(instances.values());
+  }
 }

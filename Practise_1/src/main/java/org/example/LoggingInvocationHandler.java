@@ -1,5 +1,7 @@
 package org.example;
 
+import org.example.proxy.annotation.Logged;
+
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 

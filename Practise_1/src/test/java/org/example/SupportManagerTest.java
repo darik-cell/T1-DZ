@@ -10,7 +10,7 @@ public class SupportManagerTest {
 
   @Test
   public void support_manager_should_return_support_phrase() throws InvocationTargetException, IllegalAccessException {
-    final var context = new ApplicationContext();
+    final var context = new ApplicationContext("org.example.configuration");
     final var supportManager = context.getInstance(SupportManager.class);
     assertEquals("Dear, Hey!", supportManager.provideSupport());
   }
