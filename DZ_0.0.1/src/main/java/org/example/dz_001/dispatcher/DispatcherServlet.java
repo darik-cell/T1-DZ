@@ -2,6 +2,7 @@ package org.example.dz_001.dispatcher;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.example.dz_001.context.ApplicationContext;
@@ -12,12 +13,12 @@ import java.util.List;
 import java.util.Objects;
 
 @WebServlet(name = "dispatcher", urlPatterns = "/*")
-public class DispatcherServlet {
+public class DispatcherServlet extends HttpServlet {
 
   private List<HandlerMapping> mappings;
   private List<HandlerAdapter> adapters;
 
-  public void init() throws InvocationTargetException, IllegalAccessException {
+  public void init() {
     var ctx = new ApplicationContext("org.example.dz_001.configuration");
     mappings = List.of(new AnnotationHandlerMapping(ctx));
     adapters = List.of(new ReflectionHandlerAdapter());
