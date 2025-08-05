@@ -1,5 +1,7 @@
 package org.example;
 
+import org.example.model.SupportPhrase;
+
 public class SupportManagerImpl implements SupportManager {
 
   private final SupportService supportService;
@@ -9,7 +11,7 @@ public class SupportManagerImpl implements SupportManager {
   }
 
   @Override
-  public String provideSupport() {
-    return "Dear, %s".formatted(supportService.getPhrase());
+  public SupportPhrase provideSupport() {
+    return supportService.getPhrase();
   }
 }

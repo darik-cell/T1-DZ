@@ -7,7 +7,8 @@ import org.example.proxy.annotation.Logged;
 
 @Controller
 public interface HelpController {
+
   @Logged
-  @RequestMapping(method = HttpMethod.GET, path = "/")
+  @RequestMapping(method = HttpMethod.GET)
   SupportPhrase getSupportPhrase();
 }

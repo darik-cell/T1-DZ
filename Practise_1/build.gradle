@@ -10,9 +10,16 @@ repositories {
 }
 
 dependencies {
+    testImplementation platform('org.mockito:mockito-bom:5.18.0')
+    testImplementation 'org.mockito:mockito-core'
+    testImplementation 'org.mockito:mockito-junit-jupiter'
+    implementation platform('com.fasterxml.jackson:jackson-bom:2.15.2')
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+    compileOnly 'jakarta.servlet:jakarta.servlet-api:6.1.0'
     implementation 'org.reflections:reflections:0.10.2'
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'jakarta.servlet:jakarta.servlet-api:6.1.0'
 }
 
 test {

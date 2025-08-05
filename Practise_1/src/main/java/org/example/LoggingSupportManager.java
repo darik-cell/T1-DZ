@@ -1,5 +1,7 @@
 package org.example;
 
+import org.example.model.SupportPhrase;
+
 public class LoggingSupportManager implements SupportManager {
 
   private final SupportManager supportManager;
@@ -9,9 +11,9 @@ public class LoggingSupportManager implements SupportManager {
   }
 
   @Override
-  public String provideSupport() {
+  public SupportPhrase provideSupport() {
     System.out.println("Начало метода");
-    String supportPhrase = supportManager.provideSupport();
+    var supportPhrase = supportManager.provideSupport();
     System.out.println("Конец метода");
     return supportPhrase;
   }

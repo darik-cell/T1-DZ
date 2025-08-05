@@ -21,12 +21,12 @@ public class DispatcherServlet extends HttpServlet {
     httpCallDispatcher = applicationContext.getInstance(HttpCallDispatcher.class);
   }
 
-  protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+  public void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
     final var handler = mappingProvider.getMapping(req);
     httpCallDispatcher.dispatch(handler, resp);
   }
 
-  protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+  public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
     super.doPost(req, resp);
   }
 }

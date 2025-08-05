@@ -4,6 +4,8 @@ import org.example.SupportManager;
 import org.example.SupportManagerImpl;
 import org.example.SupportService;
 import org.example.SupportServiceImpl;
+import org.example.controller.HelpController;
+import org.example.controller.HelpControllerImpl;
 import org.example.proxy.ControllerLoggingProxyApplier;
 import org.example.proxy.ProxyApplier;
 
@@ -28,5 +30,10 @@ public class SupportConfiguration {
   @Instance
   public SupportService supportService() {
     return new SupportServiceImpl();
+  }
+
+  @Instance
+  public HelpController  helpController(SupportManager supportManager) {
+    return new HelpControllerImpl(supportManager);
   }
 }

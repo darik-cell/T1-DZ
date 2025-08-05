@@ -1,8 +1,7 @@
 package org.example;
 
-import org.example.controller.annotation.Controller;
-import org.example.proxy.annotation.Logged;
+import org.example.model.SupportPhrase;
 
 public interface SupportService {
-  String getPhrase();
+  SupportPhrase getPhrase();
 }

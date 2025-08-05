@@ -13,6 +13,8 @@ import java.util.Map;
 
 public class CommonMappingProvider implements MappingProvider {
 
+  private static final String BASE_PATH = "/support";
+
   private final ApplicationContext applicationContext;
   private final Map<Mapping, Handler> mapping2Handler = new HashMap<>();
 
@@ -31,7 +33,8 @@ public class CommonMappingProvider implements MappingProvider {
             .filter(it -> Arrays.stream(it.getClass().getInterfaces()).anyMatch(i -> i.isAnnotationPresent(Controller.class)))
             .toList();
     for (Object controller : controllers) {
-      Arrays.stream(controller.getClass().getMethods())
+      Arrays.stream(controller.getClass().getInterfaces())
+              .flatMap(i -> Arrays.stream(i.getMethods()))
               .filter(it -> it.isAnnotationPresent(RequestMapping.class))
               .forEach(method -> addMapping(controller, method));
     }
@@ -40,7 +43,7 @@ public class CommonMappingProvider implements MappingProvider {
 
   private void addMapping(Object controller, Method method) {
     final var mappingAnnotation = method.getAnnotation(RequestMapping.class);
-    mapping2Handler.put(new Mapping(mappingAnnotation.path(), mappingAnnotation.method()), new Handler(controller, method));
+    mapping2Handler.put(new Mapping(mappingAnnotation.path().substring(BASE_PATH.length()), mappingAnnotation.method()), new Handler(controller, method));
   }
 
   public record Mapping(
