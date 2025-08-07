@@ -25,7 +25,7 @@ public class CommonMappingProvider implements MappingProvider {
 
   @Override
   public Handler getMapping(HttpServletRequest req) {
-    return mapping2Handler.get(new Mapping(req.getRequestURI(), HttpMethod.valueOf(req.getMethod())));
+    return mapping2Handler.get(new Mapping(req.getPathInfo().substring(BASE_PATH.length()), HttpMethod.valueOf(req.getMethod())));
   }
 
   private void init() {
@@ -43,7 +43,7 @@ public class CommonMappingProvider implements MappingProvider {
 
   private void addMapping(Object controller, Method method) {
     final var mappingAnnotation = method.getAnnotation(RequestMapping.class);
-    mapping2Handler.put(new Mapping(mappingAnnotation.path().substring(BASE_PATH.length()), mappingAnnotation.method()), new Handler(controller, method));
+    mapping2Handler.put(new Mapping(mappingAnnotation.path(), mappingAnnotation.method()), new Handler(controller, method));
   }
 
   public record Mapping(

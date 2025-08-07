@@ -23,10 +23,11 @@ public class DispatcherServlet extends HttpServlet {
 
   public void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
     final var handler = mappingProvider.getMapping(req);
-    httpCallDispatcher.dispatch(handler, resp);
+    httpCallDispatcher.dispatch(handler, req, resp);
   }
 
   public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-    super.doPost(req, resp);
+    final var handler = mappingProvider.getMapping(req);
+    httpCallDispatcher.dispatch(handler, req, resp);
   }
 }

@@ -1,11 +1,14 @@
 package org.example.configuration;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.SupportManager;
 import org.example.SupportManagerImpl;
 import org.example.SupportService;
 import org.example.SupportServiceImpl;
 import org.example.controller.HelpController;
 import org.example.controller.HelpControllerImpl;
+import org.example.dispatcher.HttpCallDispatcher;
+import org.example.dispatcher.JsonContentTypeHttpCallDispatcher;
 import org.example.proxy.ControllerLoggingProxyApplier;
 import org.example.proxy.ProxyApplier;
 
@@ -35,5 +38,15 @@ public class SupportConfiguration {
   @Instance
   public HelpController  helpController(SupportManager supportManager) {
     return new HelpControllerImpl(supportManager);
+  }
+
+  @Instance
+  public ObjectMapper objectMapper() {
+    return new ObjectMapper();
+  }
+
+  @Instance
+  public HttpCallDispatcher jsonContentTypeHttpCallDispatcher(ObjectMapper objectMapper) {
+    return new JsonContentTypeHttpCallDispatcher(objectMapper);
   }
 }

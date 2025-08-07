@@ -5,12 +5,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.example.dispatcher.DispatcherServlet;
 import org.junit.jupiter.api.Test;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.io.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class DispatcherServletTest {
 
@@ -30,5 +28,25 @@ public class DispatcherServletTest {
 
     assertEquals("""
             {"phrase":"Hey!"}""",  stringWriter.toString());
+  }
+
+  @Test
+  public void should_set_new_phrase() throws Exception {
+    final var requestContent = """
+            {"phrase":"Hey!"}""";
+    final var stringWriter = new StringWriter();
+    final var printWriter = new PrintWriter(stringWriter);
+    final var request = mock(HttpServletRequest.class);
+    when(request.getPathInfo()).thenReturn("/support");
+    when(request.getMethod()).thenReturn("POST");
+    final var response = mock(HttpServletResponse.class);
+    when(response.getWriter()).thenReturn(printWriter);
+    when(request.getReader()).thenReturn(new BufferedReader(new StringReader(requestContent)));
+    final var dispatcherServlet = new DispatcherServlet();
+
+    dispatcherServlet.init();
+    dispatcherServlet.doPost(request, response);
+
+    verify(response, times(1)).setStatus(201);
   }
 }

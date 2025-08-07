@@ -1,7 +1,11 @@
 package org.example.dispatcher;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class JsonContentTypeHttpCallDispatcher implements HttpCallDispatcher {
 
@@ -12,11 +16,20 @@ public class JsonContentTypeHttpCallDispatcher implements HttpCallDispatcher {
   }
 
   @Override
-  public void dispatch(CommonMappingProvider.Handler controller, HttpServletResponse resp) {
+  public void dispatch(CommonMappingProvider.Handler controller, HttpServletRequest req, HttpServletResponse resp) {
     try {
-      final var result = controller.method().invoke(controller.target());
+      final Object result;
       resp.setContentType("application/json");
-      resp.getWriter().append(objectMapper.writeValueAsString(result));
+      if (controller.method().getParameterCount() == 0) {
+        result = controller.method().invoke(controller.target());
+        resp.getWriter().append(objectMapper.writeValueAsString(result));
+      }
+      else {
+        final var parameterType = controller.method().getParameters()[0].getType();
+        String content = req.getReader().lines().collect(Collectors.joining());
+        controller.method().invoke(controller.target(), objectMapper.readValue(content, parameterType));
+        resp.setStatus(201);
+      }
     }
     catch (Exception e) {}
   }

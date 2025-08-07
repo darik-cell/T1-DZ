@@ -14,4 +14,9 @@ public class SupportManagerImpl implements SupportManager {
   public SupportPhrase provideSupport() {
     return supportService.getPhrase();
   }
+
+  @Override
+  public void writeSupport(SupportPhrase supportPhrase) {
+    supportService.setPhrase(supportPhrase);
+  }
 }

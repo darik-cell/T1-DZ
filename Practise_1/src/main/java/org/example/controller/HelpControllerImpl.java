@@ -16,4 +16,9 @@ public class HelpControllerImpl implements HelpController {
   public SupportPhrase getSupportPhrase() {
     return supportManager.provideSupport();
   }
+
+  @Override
+  public void writeSupportPhrase(SupportPhrase supportPhrase) {
+    supportManager.writeSupport(supportPhrase);
+  }
 }
